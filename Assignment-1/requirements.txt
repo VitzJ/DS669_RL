@@ -1,4 +1,0 @@
-!pip install gymnasium[toy-text]
-!pip install gymnasium==0.29.1
-!pip install numpy==1.26.3
-!pip install matplotlib
