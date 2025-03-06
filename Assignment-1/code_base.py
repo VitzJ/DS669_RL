@@ -230,7 +230,7 @@ if __name__ == "__main__":
     env = gym.make('FrozenLake-v1', desc=None, map_name="8x8", render_mode=args.render_mode, is_slippery=False)
     # Please check this link for the definition of state and actions of the FrozenLake game:
     # https://www.gymlibrary.dev/environments/toy\_text/frozen\_lake/
-
+    
     # Number of state is 8 * 8 = 64
     env.nS = env.nrow * env.ncol
     # Number of action is 4
