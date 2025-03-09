@@ -257,7 +257,7 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
     while True:
         iteration += 1
         value_function_prev = value_function.copy()
-        delta = 0
+        #delta = 0
 
         for state in range(nS):
             q_values = np.zeros(nA)
@@ -274,15 +274,14 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
                     q_values[action] += prob * (reward + gamma * value_function[next_state] * (not done))
 
             best_action_value = np.max(q_values)
-            delta = max(delta, abs(value_function[state] - best_action_value))
+            #delta = max(delta, abs(value_function[state] - best_action_value))
 
             value_function[state] = best_action_value
 
             policy[state] = np.argmax(q_values)
         
-        # 3. Convergence criterion, terminate if below epsilon
-
-        #delta = np.linalg.norm(value_function - value_function_prev, np.inf)
+        # Convergence criterion, terminate if below epsilon
+        delta = np.linalg.norm(value_function - value_function_prev, np.inf)
 
         if delta <= epsilon:
             break
