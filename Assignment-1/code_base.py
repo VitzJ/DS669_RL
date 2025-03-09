@@ -60,7 +60,11 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # evaluation_steps: the number of steps needed for policy evaluation in each iteration
     evaluation_steps = 0
 
-
+    #print('param P:', P)
+    #print('param nS:', nS)
+    #print('param policy:', policy)
+    #print('param gamma:', gamma)
+    #print('param epsilon:', epsilon)
 
     ############################
     # Your Code #
@@ -73,10 +77,27 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # 2. Iterate over all states: Compute new values uniformly based on `value_function_prev` to avoid immediate updates affecting other states in the current iteration
     # 3. Convergence criterion: Calculate the infinity norm (max absolute difference) between old and new value functions. Terminate if below `epsilon`
 
-    
+    while True:
+        # 1. Save a copy of old values to `value_function_prev`
+        value_function_prev = np.copy(value_function)
 
+        # 2. Iterate over all states in nS to compute new values based on `value_function_prev`
+        for state in range(nS):
+            action = policy[state]
+            new_value = 0
 
+            for prob, next_state, reward, done in P[state][action]:
+                new_value += prob * (reward + gamma * value_function_prev[next_state] * (not done))
+            
+            value_function[state] = new_value
 
+        # Check if the value_function is still 1D
+        if value_function.ndim != 1:
+            raise ValueError(f"Expected value_function to be 1D, but got {value_function.ndim}D.")
+
+        # 3. Convergence criterion, terminate if below epsilon
+        if np.linalg.norm(value_function - value_function_prev, np.inf) < epsilon:
+            break
 
     ############################
 
@@ -101,6 +122,41 @@ def policy_improvement(P, nS, nA, value_function, gamma=0.9):
     # Your Code #
     # Please use np.argmax to select the best actions after getting the q value of each action. #
 
+    #print('\nparam P:', P)
+    print('param nS:', nS)
+    print('param nA:', nA)
+    print('param value_function:', value_function)
+    print('new policy:', new_policy)
+    print('param gamma:', gamma)
+
+    # Ensure that value_function is a 1D array
+    if value_function.ndim != 1:
+        raise ValueError(f"value_function should be a 1D array, but found {value_function.ndim} dimensions")
+
+    # initialize the `new_policy` array
+    new_policy = np.zeros(nS, dtype="int")
+
+    for state in range(nS):
+        # Initialize the `q_value` array
+        q_values = np.zeros(nA)
+
+        # Get the `q_value` of each action
+        for action in range(nA):
+            for transition in P[state][action]:
+                print(transition)
+                prob, next_state, reward, done = transition
+
+                print(f"\nState: {state}, Action: {action}")
+                print(f"Transition: (prob={prob}, next_state={next_state}, reward={reward}, done={done})")
+                print(f"value_function[{next_state}] = {value_function[next_state]}")
+
+                # Ensure value_function[next_state] is a scalar
+                assert np.isscalar(value_function[next_state]), f"Non-scalar value detected: {value_function[next_state]}"
+
+                q_values[action] += prob * (reward + gamma * value_function[next_state] * (not done))
+        
+        # Use `np.argmax(q_values)` to select the best actions
+        new_policy[state] = np.argmax(q_values)
 
     ############################
     return new_policy
@@ -142,8 +198,17 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
     # Please use while loop to finish this part. #
     # The time complexity of the code within the while loop represents the running time required "in one iteration" as mentioned in II.(c)#
 
+    while True:
+        iteration += 1
+        value_function, _ = policy_evaluation(P, nS, policy_prev, gamma, epsilon)
+        new_policy = policy_improvement(P, nS, nA, value_function, gamma)
 
+        if np.array_equal(policy_prev, new_policy):
+            break
 
+        policy_prev = new_policy
+    
+    policy = policy_prev
     ############################
 
     print(f"There are {iteration} iterations in policy iteration.")
@@ -237,7 +302,7 @@ if __name__ == "__main__":
     env.nA = 4
 
     # Uncomment the following line to check and understand the format of the transition probability of FrozenLake.
-    # print('transition probability:', env.P)
+    #print('transition probability:', env.P)
 
     # Running time start point
     start = time.time()
