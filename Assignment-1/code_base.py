@@ -95,7 +95,8 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
             action = policy[state]
             new_value = 0
 
-            for prob, next_state, reward, done in P[state][action]:
+            for transition in P[state][action]:
+                prob, next_state, reward, done = transition
                 new_value += prob * (reward + gamma * value_function_prev[next_state] * (not done))
             
             value_function[state] = new_value
@@ -105,7 +106,7 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
             raise ValueError(f"Expected value_function to be 1D, but got {value_function.ndim}D.")
 
         # 3. Convergence criterion, terminate if below epsilon
-        if np.linalg.norm(value_function - value_function_prev, np.inf) < epsilon:
+        if np.linalg.norm(value_function - value_function_prev, np.inf) <= epsilon:
             break
 
     ############################
@@ -255,6 +256,7 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
 
     while True:
         iteration += 1
+        value_function_prev = value_function.copy()
         delta = 0
 
         for state in range(nS):
@@ -271,16 +273,22 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
 
                     q_values[action] += prob * (reward + gamma * value_function[next_state] * (not done))
 
-
             best_action_value = np.max(q_values)
             delta = max(delta, abs(value_function[state] - best_action_value))
 
             value_function[state] = best_action_value
 
             policy[state] = np.argmax(q_values)
+        
+        # 3. Convergence criterion, terminate if below epsilon
 
-        if delta < epsilon:
+        #delta = np.linalg.norm(value_function - value_function_prev, np.inf)
+
+        if delta <= epsilon:
             break
+
+        #if delta < epsilon:
+            #break
 
     ############################
 
@@ -307,7 +315,7 @@ def render_single(env, policy, max_steps=100):
     state, _ = env.reset()
     for t in range(max_steps):
         env.render()
-        time.sleep(0.25)
+        #time.sleep(0.25)
         action = policy[state]
         state, reward, done, _, _ = env.step(action)
         episode_reward += reward
