@@ -1,3 +1,12 @@
+### Temp Warning Suppression because its annoying
+import warnings
+
+# Suppress specific warnings
+warnings.filterwarnings("ignore", message=".*env.nrow.*")
+warnings.filterwarnings("ignore", message=".*env.ncol.*")
+warnings.filterwarnings("ignore", message=".*env.P.*")
+### DELETE ^^^^^^^^^^^ AFTER FINISHED WITH ASSIGNMENT
+
 ### MDP Value Iteration and Policy Iteration
 import random
 
@@ -123,11 +132,11 @@ def policy_improvement(P, nS, nA, value_function, gamma=0.9):
     # Please use np.argmax to select the best actions after getting the q value of each action. #
 
     #print('\nparam P:', P)
-    print('param nS:', nS)
-    print('param nA:', nA)
-    print('param value_function:', value_function)
-    print('new policy:', new_policy)
-    print('param gamma:', gamma)
+    #print('param nS:', nS)
+    #print('param nA:', nA)
+    #print('param value_function:', value_function)
+    #print('new policy:', new_policy)
+    #print('param gamma:', gamma)
 
     # Ensure that value_function is a 1D array
     if value_function.ndim != 1:
@@ -143,12 +152,12 @@ def policy_improvement(P, nS, nA, value_function, gamma=0.9):
         # Get the `q_value` of each action
         for action in range(nA):
             for transition in P[state][action]:
-                print(transition)
+                #print(transition)
                 prob, next_state, reward, done = transition
 
-                print(f"\nState: {state}, Action: {action}")
-                print(f"Transition: (prob={prob}, next_state={next_state}, reward={reward}, done={done})")
-                print(f"value_function[{next_state}] = {value_function[next_state]}")
+                #print(f"\nState: {state}, Action: {action}")
+                #print(f"Transition: (prob={prob}, next_state={next_state}, reward={reward}, done={done})")
+                #print(f"value_function[{next_state}] = {value_function[next_state]}")
 
                 # Ensure value_function[next_state] is a scalar
                 assert np.isscalar(value_function[next_state]), f"Non-scalar value detected: {value_function[next_state]}"
@@ -244,7 +253,34 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
     # Please use while loop to finish this part. #
     # The time complexity of the code within the while loop represents the running time required "in one iteration" as mentioned in II.(d)#
 
+    while True:
+        iteration += 1
+        delta = 0
 
+        for state in range(nS):
+            q_values = np.zeros(nA)
+
+            for action in range(nA):
+
+                for transition in P[state][action]:
+                    #print(transition)
+                    prob, next_state, reward, done = transition
+                    #print(f"\nState: {state}, Action: {action}")
+                    #print(f"Transition: (prob={prob}, next_state={next_state}, reward={reward}, done={done})")
+                    #print(f"value_function[{next_state}] = {value_function[next_state]}")
+
+                    q_values[action] += prob * (reward + gamma * value_function[next_state] * (not done))
+
+
+            best_action_value = np.max(q_values)
+            delta = max(delta, abs(value_function[state] - best_action_value))
+
+            value_function[state] = best_action_value
+
+            policy[state] = np.argmax(q_values)
+
+        if delta < epsilon:
+            break
 
     ############################
 
