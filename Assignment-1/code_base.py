@@ -59,11 +59,20 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
 
     ############################
     # Your Code #
-    # Modify the following line for initialization optimization in question 5.(a)
+    # Modify the following line for initialization optimization in question 5.(f)
     # Hint: Please add a new parameter for the policy_iteration function and use this parameter to control the initialization.
 
     # Initialize value function as all zeros
     value_function = np.zeros(nS)
+
+    # Test 1: Initialize value function as all negative 1
+    #value_function = np.ones(nS)
+    #value_function = value_function * -1
+
+    # Test 2: Copy the final value function from the default zeroes initialization, test epsilon = 0.001, 0.01, 0.1, 0.5, 1, 10
+    value_function = np.array([0.254, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.59,  0.314, 0.349, 0.387, 0.,    0.478, 0.531, 0.59,  0.656, 0.349, 0.387, 0.43,  0.478, 0.531, 0.,    0.656, 0.729, 0.314, 0.349, 0.387, 0.,    0.59,  0.656, 0.729, 0.81,  0.282, 0.,    0.,    0.59,  0.656, 0.729, 0.,    0.9,   0.314, 0.,    0.478, 0.531, 0.,    0.81,  0.,    1.,    0.349, 0.387, 0.43,  0.,    0.81,  0.9,   1.,    0.   ])
+
+    #print(f'value_function with ndim {len(value_function)} :', value_function)
     ############################
 
     # evaluation_steps: the number of steps needed for policy evaluation in each iteration
@@ -105,10 +114,13 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
         if value_function.ndim != 1:
             raise ValueError(f"Expected value_function to be 1D, but got {value_function.ndim}D.")
 
+        evaluation_steps += 1
         # 3. Convergence criterion, terminate if below epsilon
         if np.linalg.norm(value_function - value_function_prev, np.inf) <= epsilon:
             break
-
+            
+    print(f'value_function: {np.equal(value_function,value_function_prev)}')
+    #print(f'Evaluation Steps: {evaluation_steps}')
     ############################
 
     return value_function, evaluation_steps
@@ -199,7 +211,7 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
     iteration = 0
 
     # previous policy: the policy of last iteration.
-    policy_prev = init_policy
+    policy_prev = init_policy.copy()
 
     ############################
     # Your Code #
@@ -210,8 +222,11 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
 
     while True:
         iteration += 1
-        value_function, _ = policy_evaluation(P, nS, policy_prev, gamma, epsilon)
+        value_function, evaluation_steps = policy_evaluation(P, nS, policy_prev, gamma, epsilon)
         new_policy = policy_improvement(P, nS, nA, value_function, gamma)
+
+        print(f'Evaluation Steps in Iteration {iteration}: {evaluation_steps}')
+        #print(f'Value Function: {value_function}\n')
 
         if np.array_equal(policy_prev, new_policy):
             break
