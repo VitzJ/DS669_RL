@@ -65,11 +65,8 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # Initialize value function as all zeros
     value_function = np.zeros(nS)
 
-    # Test 1: Initialize value function as all negative 1
-    #value_function = np.ones(nS)
-    #value_function = value_function * -1
-
-    # Test 2: Copy the final value function from the default zeroes initialization, test epsilon = 0.001, 0.01, 0.1, 0.5, 1, 10
+    # 5(f). Test 2.
+    # Copy the final value function from the default zeroes initialization, test epsilon = 0.001, 0.01, 0.1, 0.5, 1, 10
     #value_function = np.array([0.254, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.59,  0.314, 0.349, 0.387, 0.,    0.478, 0.531, 0.59,  0.656, 0.349, 0.387, 0.43,  0.478, 0.531, 0.,    0.656, 0.729, 0.314, 0.349, 0.387, 0.,    0.59,  0.656, 0.729, 0.81,  0.282, 0.,    0.,    0.59,  0.656, 0.729, 0.,    0.9,   0.314, 0.,    0.478, 0.531, 0.,    0.81,  0.,    1.,    0.349, 0.387, 0.43,  0.,    0.81,  0.9,   1.,    0.   ])
 
     #print(f'value_function with ndim {len(value_function)} :', value_function)
@@ -96,8 +93,6 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # 3. Convergence criterion: Calculate the infinity norm (max absolute difference) between old and new value functions. Terminate if below `epsilon`
 
     while True:
-        # question 5 (f.) testing
-        #break
         # 1. Save a copy of old values to `value_function_prev`
         value_function_prev = np.copy(value_function)
 
@@ -120,10 +115,26 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
         # 3. Convergence criterion, terminate if below epsilon
         if np.linalg.norm(value_function - value_function_prev, np.inf) <= epsilon:
             break
-            
+
     #print(f'value_function: {np.equal(value_function,value_function_prev)}')
     #print(f'Evaluation Steps: {evaluation_steps}')
     ############################
+
+
+    '''
+    If gamma increases and epsilon is same: convergence criterion is harder to fulfill for policy_evaluation stage because increase in linalg.norm
+    If gamma decreases and epsilon is same: convergence criterion is easier to fulfill for policy_evaluation stage because decrease in linalg.norm
+
+    If gamma is same and epsilon increases: convergence criterion is easier to fulfill for policy_evaluation stage because more strict filter of linalg.norm
+    If gamma is same and epsilon decreases: convergence criterion is harder to fulfill for policy_evaluation stage because less strict filter of linalg.norm
+
+    If gamma increases and epsilon increases: depends on what increases more, linalg.norm vs epsilon
+    If gamma decreases and epsilon decreases: depends on what decreases more, linalg.norm vs epsilon
+
+    If gamma increases and epsilon decreases: convergence criterion is harder to fulfill due to both parameters for policy_evaluation stage
+    If gamma decreases and epsilon increases: convergence criterion is easier to fulfill due to both parameters for policy_evaluation stage
+    
+    '''
 
     return value_function, evaluation_steps
 
@@ -207,6 +218,31 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
     # for the question of policy iteration initialization optimization #
     # Initialize policy #
     init_policy = np.random.randint(0, nA, nS) if init_action == -1 else np.ones(nS, dtype=int) * init_action
+    
+    # 5(f). Test 1.
+    print(init_policy)
+    print()
+
+    translate = {0: 'L', 1: 'D', 2: 'R', 3: 'U'}
+
+    def reverse_dict(my_dict):
+        return {value: key for key, value in my_dict.items()}
+
+    reversed_dict = reverse_dict(translate)
+
+    init_policy = np.array(['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D',
+            'D', 'D', 'D', 'R', 'D', 'D', 'D', 'D',
+            'D', 'D', 'D', 'L', 'D', 'R', 'D', 'D',
+            'R', 'R', 'R', 'R', 'D', 'L', 'D', 'D',
+            'R', 'R', 'U', 'L', 'D', 'D', 'R', 'D',
+            'D', 'L', 'L', 'R', 'R', 'D', 'L', 'D',
+            'D', 'L', 'R', 'U', 'L', 'D', 'L', 'D',
+            'R', 'R', 'U', 'L', 'R', 'R', 'R', 'L'])
+    
+    # Apply the reverse dictionary to the init_policy array
+    init_policy = np.vectorize(reversed_dict.get)(init_policy)
+
+    print(init_policy)
     ############################
 
     # Number of iterations. The iteration does not include the steps of policy evaluation.
@@ -303,9 +339,6 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
         if delta <= epsilon:
             break
 
-        #if delta < epsilon:
-            #break
-
     ############################
 
     # uncomment the following line if you need to print the value function
@@ -371,7 +404,7 @@ if __name__ == "__main__":
 
     # Run the algorithm for "args.seeds" times. Each time with a different random seed.
     for i in range(args.seeds):
-
+        #time.freeze(0.25)
         # Reset the environment
         env.reset()
         # Set the random seed
