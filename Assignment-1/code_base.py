@@ -70,7 +70,7 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     #value_function = value_function * -1
 
     # Test 2: Copy the final value function from the default zeroes initialization, test epsilon = 0.001, 0.01, 0.1, 0.5, 1, 10
-    value_function = np.array([0.254, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.59,  0.314, 0.349, 0.387, 0.,    0.478, 0.531, 0.59,  0.656, 0.349, 0.387, 0.43,  0.478, 0.531, 0.,    0.656, 0.729, 0.314, 0.349, 0.387, 0.,    0.59,  0.656, 0.729, 0.81,  0.282, 0.,    0.,    0.59,  0.656, 0.729, 0.,    0.9,   0.314, 0.,    0.478, 0.531, 0.,    0.81,  0.,    1.,    0.349, 0.387, 0.43,  0.,    0.81,  0.9,   1.,    0.   ])
+    #value_function = np.array([0.254, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.59,  0.314, 0.349, 0.387, 0.,    0.478, 0.531, 0.59,  0.656, 0.349, 0.387, 0.43,  0.478, 0.531, 0.,    0.656, 0.729, 0.314, 0.349, 0.387, 0.,    0.59,  0.656, 0.729, 0.81,  0.282, 0.,    0.,    0.59,  0.656, 0.729, 0.,    0.9,   0.314, 0.,    0.478, 0.531, 0.,    0.81,  0.,    1.,    0.349, 0.387, 0.43,  0.,    0.81,  0.9,   1.,    0.   ])
 
     #print(f'value_function with ndim {len(value_function)} :', value_function)
     ############################
@@ -96,6 +96,8 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # 3. Convergence criterion: Calculate the infinity norm (max absolute difference) between old and new value functions. Terminate if below `epsilon`
 
     while True:
+        # question 5 (f.) testing
+        #break
         # 1. Save a copy of old values to `value_function_prev`
         value_function_prev = np.copy(value_function)
 
@@ -119,7 +121,7 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
         if np.linalg.norm(value_function - value_function_prev, np.inf) <= epsilon:
             break
             
-    print(f'value_function: {np.equal(value_function,value_function_prev)}')
+    #print(f'value_function: {np.equal(value_function,value_function_prev)}')
     #print(f'Evaluation Steps: {evaluation_steps}')
     ############################
 
@@ -231,9 +233,9 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
         if np.array_equal(policy_prev, new_policy):
             break
 
-        policy_prev = new_policy
+        policy_prev = new_policy.copy()
     
-    policy = policy_prev
+    policy = policy_prev.copy()
     ############################
 
     print(f"There are {iteration} iterations in policy iteration.")
