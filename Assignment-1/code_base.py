@@ -66,8 +66,14 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     value_function = np.zeros(nS)
 
     # 5(f). Test 2.
-    # Copy the final value function from the default zeroes initialization, test epsilon = 0.001, 0.01, 0.1, 0.5, 1, 10
-    #value_function = np.array([0.254, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.59,  0.314, 0.349, 0.387, 0.,    0.478, 0.531, 0.59,  0.656, 0.349, 0.387, 0.43,  0.478, 0.531, 0.,    0.656, 0.729, 0.314, 0.349, 0.387, 0.,    0.59,  0.656, 0.729, 0.81,  0.282, 0.,    0.,    0.59,  0.656, 0.729, 0.,    0.9,   0.314, 0.,    0.478, 0.531, 0.,    0.81,  0.,    1.,    0.349, 0.387, 0.43,  0.,    0.81,  0.9,   1.,    0.   ])
+    #value_function = np.array([0.254, 0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 
+    #                           0.282, 0.314, 0.349, 0.387, 0.43,  0.478, 0.531, 0.59,  
+    #                           0.314, 0.349, 0.387, 0.,    0.478, 0.531, 0.59,  0.656, 
+    #                           0.349, 0.387, 0.43,  0.478, 0.531, 0.,    0.656, 0.729, 
+    #                           0.314, 0.349, 0.387, 0.,    0.59,  0.656, 0.729, 0.81,  
+    #                           0.282, 0.,    0.,    0.59,  0.656, 0.729, 0.,    0.9,   
+    #                           0.314, 0.,    0.478, 0.531, 0.,    0.81,  0.,    1.,    
+    #                           0.349, 0.387, 0.43,  0.,    0.81,  0.9,   1.,    0.   ])
 
     #print(f'value_function with ndim {len(value_function)} :', value_function)
     # END OF 5(f). Test 2.
@@ -387,7 +393,7 @@ if __name__ == "__main__":
 
     # Run the algorithm for "args.seeds" times. Each time with a different random seed.
     for i in range(args.seeds):
-        #time.freeze(0.25)
+        time.freeze(0.25)
         # Reset the environment
         env.reset()
         # Set the random seed
