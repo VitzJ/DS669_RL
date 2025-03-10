@@ -1,12 +1,3 @@
-### Temp Warning Suppression because its annoying
-import warnings
-
-# Suppress specific warnings
-warnings.filterwarnings("ignore", message=".*env.nrow.*")
-warnings.filterwarnings("ignore", message=".*env.ncol.*")
-warnings.filterwarnings("ignore", message=".*env.P.*")
-### DELETE ^^^^^^^^^^^ AFTER FINISHED WITH ASSIGNMENT
-
 ### MDP Value Iteration and Policy Iteration
 import random
 
@@ -18,6 +9,15 @@ import time
 np.set_printoptions(linewidth=np.inf)
 
 np.set_printoptions(precision=3)
+
+### Temp Warning Suppression because its ~15 lines of annoying text every call to code_base.py
+# #import warnings
+
+# Suppress specific warnings
+#warnings.filterwarnings("ignore", message=".*env.nrow.*")
+#warnings.filterwarnings("ignore", message=".*env.ncol.*")
+#warnings.filterwarnings("ignore", message=".*env.P.*")
+### COMMENT OUT ^^^^^^^^^^^ AFTER FINISHED WITH ASSIGNMENT
 
 
 def interpret_policy(policy, nrow, ncol):
@@ -82,12 +82,6 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # evaluation_steps: the number of steps needed for policy evaluation in each iteration
     evaluation_steps = 0
 
-    #print('param P:', P)
-    #print('param nS:', nS)
-    #print('param policy:', policy)
-    #print('param gamma:', gamma)
-    #print('param epsilon:', epsilon)
-
     ############################
     # Your Code #
     # Please use np.linalg.norm(x, np.inf) to calculate the infinity norm. #
@@ -98,6 +92,12 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
     # 1. Save a copy of old values: Copy the current value function to `value_function_prev` before each iteration
     # 2. Iterate over all states: Compute new values uniformly based on `value_function_prev` to avoid immediate updates affecting other states in the current iteration
     # 3. Convergence criterion: Calculate the infinity norm (max absolute difference) between old and new value functions. Terminate if below `epsilon`
+
+    #print('param P:', P)
+    #print('param nS:', nS)
+    #print('param policy:', policy)
+    #print('param gamma:', gamma)
+    #print('param epsilon:', epsilon)
 
     while True:
         # 1. Save a copy of old values to `value_function_prev`
@@ -112,11 +112,8 @@ def policy_evaluation(P, nS, policy, gamma=0.9, epsilon=1e-3):
                 prob, next_state, reward, done = transition
                 new_value += prob * (reward + gamma * value_function_prev[next_state] * (not done))
             
+            # update the value_function at the given state
             value_function[state] = new_value
-
-        # Check if the value_function is still 1D
-        if value_function.ndim != 1:
-            raise ValueError(f"Expected value_function to be 1D, but got {value_function.ndim}D.")
 
         evaluation_steps += 1
         # 3. Convergence criterion, terminate if below epsilon
@@ -166,7 +163,7 @@ def policy_improvement(P, nS, nA, value_function, gamma=0.9):
         # Initialize the `q_value` array
         q_values = np.zeros(nA)
 
-        # Get the `q_value` of each action
+        # get the sum of the transition `q_values` per action
         for action in range(nA):
             for transition in P[state][action]:
                 #print(transition)
@@ -251,7 +248,9 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
     # The time complexity of the code within the while loop represents the running time required "in one iteration" as mentioned in II.(c)#
 
     while True:
+        # Remember to update the iteration
         iteration += 1
+        # call the policy_evaluation() and policy_improvement() to update the policy.
         value_function, evaluation_steps = policy_evaluation(P, nS, policy_prev, gamma, epsilon)
         new_policy = policy_improvement(P, nS, nA, value_function, gamma)
 
@@ -262,7 +261,7 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
             break
 
         policy_prev = np.copy(new_policy)
-    
+    # Remember to update the policy_prev.
     policy = np.copy(policy_prev)
     ############################
 
@@ -299,6 +298,7 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
     # Please use while loop to finish this part. #
     # The time complexity of the code within the while loop represents the running time required "in one iteration" as mentioned in II.(d)#
 
+    # use while loop to finish this part
     while True:
         iteration += 1
         value_function_prev = value_function.copy()
@@ -321,10 +321,11 @@ def value_iteration(P, nS, nA, init_value=0.0, gamma=0.9, epsilon=1e-3):
             #delta = max(delta, abs(value_function[state] - best_action_value))
 
             value_function[state] = best_action_value
-
+            
+            # use np.argmax to select the best action after getting the q value of each action
             policy[state] = np.argmax(q_values)
         
-        # Convergence criterion, terminate if below epsilon
+        # use np.linalg.norm(x, np.inf) to calculate the infinity norm.
         if np.linalg.norm(value_function - value_function_prev, np.inf) <= epsilon:
             break
 
