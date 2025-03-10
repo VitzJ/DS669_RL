@@ -213,7 +213,7 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
     iteration = 0
 
     # previous policy: the policy of last iteration.
-    policy_prev = init_policy.copy()
+    policy_prev = np.copy(init_policy)
 
     ############################
     # Your Code #
@@ -233,9 +233,9 @@ def policy_iteration(P, nS, nA, init_action=-1, gamma=0.9, epsilon=1e-3):
         if np.array_equal(policy_prev, new_policy):
             break
 
-        policy_prev = new_policy.copy()
+        policy_prev = np.copy(new_policy)
     
-    policy = policy_prev.copy()
+    policy = np.copy(policy_prev)
     ############################
 
     print(f"There are {iteration} iterations in policy iteration.")
