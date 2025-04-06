@@ -55,7 +55,6 @@ def main(args):
             my_actions_list = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # up 3, all the way to right, down 3
             print()
             test_moves(env, my_actions_list)
-
             ############################
 
 
@@ -71,7 +70,6 @@ def main(args):
             optimal_path_actions_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2] # up one, all the way to right, down one
             print()
             test_moves(env, optimal_path_actions_list)
-
             ############################
             exit(0)
 
@@ -98,6 +96,8 @@ def main(args):
 
         total_rewards.append(total_reward)
 
+    print()
+    print('Total_rewards: ', total_rewards)
     # uncomment the following line to print the mean and std of the total rewards
     print('mean and std:', statistic_epsilon_analysis(total_rewards))
 

@@ -34,6 +34,8 @@ def q_learning(env, num_episode, gamma, alpha, init_epsilon):
         # your epsilon optimization method. Copy your implementation in sarsa to here#
         epsilon = init_epsilon
 
+        epsilon = init_epsilon / (episode + 1) # optimized implementation from sarsa part II b.
+
         ############################
 
         ############################
@@ -44,7 +46,23 @@ def q_learning(env, num_episode, gamma, alpha, init_epsilon):
         # Do not forget to update the total reward and episode_len #
         # Please use while loop to finish this part. #
 
+        while not done:
+            # Choose action using epsilon-greedy policy
+            action = epsilon_greedy(tabular_q, state, epsilon)
 
+            # Take action, get next state, reward, and done flag
+            next_state, reward, done, _, _ = env.step(action)
+
+            # Q-learning update rule
+            best_next_action = np.argmax(tabular_q[next_state])
+            td_target = reward + gamma * tabular_q[next_state][best_next_action]
+            td_error = td_target - tabular_q[state][action]
+            tabular_q[state][action] += alpha * td_error
+
+            # Update tracking variables
+            total_reward += reward
+            episode_len += 1
+            state = next_state
 
         ############################
 

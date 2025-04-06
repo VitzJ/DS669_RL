@@ -32,7 +32,6 @@ def test_moves(env, actions):
     #• First, reset the environment.
     state, _ = env.reset()
     #print(state)
-    current_state = state
 
     for action in actions:
         #• First, reset the environment.

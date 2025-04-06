@@ -15,8 +15,17 @@ def epsilon_greedy(tabular_q, state, epsilon=0.0):
     # implement the epsilon greedy policy.
     # You can select random actions by using np.random.randint and limiting the random range.
     # Please use np.argmax from greedy selection
+    
+    # np.random.rand() returns a random float value [0.0, 1.0) from 0 inclusive to 1 non-inclusive
 
+    if np.random.rand() < epsilon: # if a random value is less than epsilon, choose a random action
 
+        action = np.random.randint(low=0, high=4, size=None, dtype=int) # this returns a random integer corresponding to an action [0 - 3]
+
+    else: # otherwise, choose the maximum q value action corresponding to the given the state's tabular_q values
+
+        action = np.argmax(tabular_q[state])
+    
     ############################
     return action
 

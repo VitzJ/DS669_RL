@@ -39,7 +39,33 @@ def n_step(env, tabular_q, epsilon, action, gamma, steps, total_reward):
     # Please read the instruction carefully to get familiar with the env.step function. #
     # Please use while loop and call the epsilon_greedy function in codebase_train.py to finish this part. #
 
+    state = env.s  # Safely track state in case episode ends immediately
 
+    # Loop for n steps (while `acted_steps` < `steps`) / until the terminal state is reached (if `done`)
+    while acted_steps < steps and not done:
+
+        # get next state, reward, done from taking a step with current action
+        #next_state, reward, done, _, _ = env.step(action)
+        next_state, reward, terminated, truncated, _ = env.step(action)
+        done = terminated or truncated
+
+        # Accumulate total_reward without discount
+        total_reward += reward
+
+        # Accumulate discounted reward
+        n_step_reward += (gamma ** acted_steps) * reward
+        
+        # Incriment the steps acted
+        acted_steps += 1
+
+        # If not done, select the next action using epsilon-greedy
+        if not done:
+            action = epsilon_greedy(tabular_q, next_state, epsilon)
+        else:
+            break
+
+    if acted_steps == 0:
+        next_state = state
 
     ############################
 
@@ -86,7 +112,9 @@ def sarsa(env, num_episode, gamma, alpha, init_epsilon, num_steps, init_q_value=
         # for the question epsilon effect. #
         # For the question in part II.(a), you do not need to do anything, just let epsilon = init_epsilon for all episode #
         # For the question in part II.(b), please modify the following line. You need to update epsilon using the number of episode according to the instruction #
-        epsilon = init_epsilon
+        epsilon = init_epsilon # part a.
+        
+        epsilon = init_epsilon / (episode + 1) # part b.
         ############################
 
         # action: initialize an action from epsilon greedy policy and input
@@ -102,9 +130,36 @@ def sarsa(env, num_episode, gamma, alpha, init_epsilon, num_steps, init_q_value=
         # Then, update the q table tarbar_q with the n_step_reward, update the state, action, and episode_len #
         # Do not forget to update the total reward and episode_len #
         # Please use while loop to finish this part. #
+        while episode_len <= 10000 and not done:
+            next_state, next_action, n_step_reward, done, acted_steps, step_reward = n_step(env=env,
+                                                                                        tabular_q=tabular_q,
+                                                                                        epsilon=epsilon,
+                                                                                        action=action, 
+                                                                                        gamma=gamma, 
+                                                                                        steps=num_steps, 
+                                                                                        total_reward=total_reward
+            )
 
+            # SARSA update: Q(s,a) ← Q(s,a) + α * (G - Q(s,a))
+            #td_target = n_step_reward + (0 if done else (gamma ** acted_steps) * tabular_q[next_state][next_action])
+            
+            # TD target handles early termination by zeroing out the bootstrapped term
+            if done:
+                td_target = n_step_reward
+            else:
+                td_target = n_step_reward + (gamma ** acted_steps) * tabular_q[next_state][next_action]
+            
+            td_error = td_target - tabular_q[state][action]
+            tabular_q[state][action] += alpha * td_error
 
+            # Update state and action for next loop
+            state = next_state
+            action = next_action
+            episode_len += acted_steps
 
+            # ✅ Fix here
+            total_reward = step_reward
+        
         ############################
 
         # print the total reward of current episode
