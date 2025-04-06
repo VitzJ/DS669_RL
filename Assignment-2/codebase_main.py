@@ -50,7 +50,11 @@ def main(args):
             # Your Code #
             # Create a list of actions to direct the environment moving from the initial state to the most right-top corner state
             # Call the test_moves function to test if your series of actions are correct
-
+            
+            # I Environment: Cliff Walking (b)(1) 
+            my_actions_list = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # up 3, all the way to right, down 3
+            print()
+            test_moves(env, my_actions_list)
 
             ############################
 
@@ -61,7 +65,12 @@ def main(args):
             # Your optimal moves: move from the initial state to the goal state with the maximum reward
             # Call the test_moves function to test if your series of actions is optimal
 
-
+            # I Environment: Cliff Walking (b)(2)
+            #suboptimal_path_my_actions_list = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2] # as in finishing initial path from (b)(1)
+            #test_moves(env, suboptimal_path_my_actions_list)
+            optimal_path_actions_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2] # up one, all the way to right, down one
+            print()
+            test_moves(env, optimal_path_actions_list)
 
             ############################
             exit(0)
