@@ -86,7 +86,7 @@ def main(args):
             raise ValueError('Unknown method')
 
         # uncomment the following line to print the q table
-        # print('q table: \n', tabular_q)
+        print('q table: \n', tabular_q)
 
         # uncomment the following line to render the environment
         # total_reward = render_single(env, tabular_q, 100)
