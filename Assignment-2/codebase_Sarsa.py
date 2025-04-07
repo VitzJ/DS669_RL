@@ -108,7 +108,7 @@ def sarsa(env, num_episode, gamma, alpha, init_epsilon, num_steps, init_q_value=
         # For the question in part II.(b), please modify the following line. You need to update epsilon using the number of episode according to the instruction #
         epsilon = init_epsilon # part a.
         
-        #epsilon = init_epsilon / (episode + 1) # part b.
+        epsilon = init_epsilon / (episode + 1) # part b.
         ############################
 
         # action: initialize an action from epsilon greedy policy and input
@@ -124,8 +124,9 @@ def sarsa(env, num_episode, gamma, alpha, init_epsilon, num_steps, init_q_value=
         # Then, update the q table tarbar_q with the n_step_reward, update the state, action, and episode_len #
         # Do not forget to update the total reward and episode_len #
         # Please use while loop to finish this part. #
-        while not done: # initial part
-        #while episode_len <= 10000 and not done: # next part
+
+        #while not done: # part II.(a.) / part II.(b.)
+        while episode_len <= 10000 and not done: # part II.(c.)
             next_state, next_action, n_step_reward, done, acted_steps, step_reward = n_step(env=env,
                                                                                         tabular_q=tabular_q,
                                                                                         epsilon=epsilon,
@@ -152,7 +153,6 @@ def sarsa(env, num_episode, gamma, alpha, init_epsilon, num_steps, init_q_value=
             action = next_action
             episode_len += acted_steps
 
-            # Fix here
             total_reward = step_reward
         
         ############################
