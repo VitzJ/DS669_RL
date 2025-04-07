@@ -106,7 +106,7 @@ def sarsa(env, num_episode, gamma, alpha, init_epsilon, num_steps, init_q_value=
         # for the question epsilon effect. #
         # For the question in part II.(a), you do not need to do anything, just let epsilon = init_epsilon for all episode #
         # For the question in part II.(b), please modify the following line. You need to update epsilon using the number of episode according to the instruction #
-        epsilon = init_epsilon # part a.
+        #epsilon = init_epsilon # part a.
         
         epsilon = init_epsilon / (episode + 1) # part b.
         ############################
