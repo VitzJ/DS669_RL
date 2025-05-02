@@ -8,7 +8,7 @@ import statistics
 import gymnasium as gym
 import numpy as np
 import random
-from get_args import get_args
+from get_args_1 import get_args
 from codebase_CartPole_test import test_each_action, test_moves, init_states
 from codebase_DQN import test_dqn
 
