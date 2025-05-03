@@ -168,8 +168,6 @@ class DQN(object):
                                     self.soft_update_tau * q_params[key]
 
             self.target_net.load_state_dict(target_params)
-
-
             ############################
             # you can comment the following line if you do not want to print the update information
             print('soft update')
@@ -254,19 +252,16 @@ def ratio_reward(next_state, env):
     # A general form of r1 and r2 is (threshold - abs(value)) / threshold.
 
     # Get thresholds
-    x_threshold = env.x_threshold
-    theta_threshold = env.theta_threshold_radians
+    x_threshold = env.unwrapped.x_threshold
+    theta_threshold = env.unwrapped.theta_threshold_radians
 
     # Extract state values
-    position = next_state[0]
-    angle = next_state[2]
+    position = next_state[0] # position dim in state vector
+    angle = next_state[2] # angle dim in state vector
 
     # Compute shaped rewards as ratios
     r1 = (x_threshold - abs(position)) / x_threshold
     r2 = (theta_threshold - abs(angle)) / theta_threshold
-
-    # return the sum of r1 and r2
-    return r1 + r2
 
     ############################
 
@@ -332,7 +327,13 @@ def test_dqn(args, env, state_dim, n_action):
             # many times of learning can make the performance comparison fair.
 
             if dqn.memory_counter >= dqn.memory_capacity:
-                dqn.learn(target_update_method=args.target_update_method)
+                #dqn.learn(target_update_method=args.target_update_method)
+                # for batch_size=10, do 6 updates/step so we see 60 samples per step
+
+                if args.batch_size == 10:
+                    for i in range(6):
+                        dqn.learn(target_update_method=args.target_update_method)
+
 
             ############################
 
