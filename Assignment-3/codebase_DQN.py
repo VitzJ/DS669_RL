@@ -164,8 +164,7 @@ class DQN(object):
             target_params = self.target_net.state_dict()
 
             for key in q_params:
-                target_params[key] = (1 - self.soft_update_tau) * target_params[key] + \
-                                    self.soft_update_tau * q_params[key]
+                target_params[key] = ((1 - self.soft_update_tau) * target_params[key]) + (self.soft_update_tau * q_params[key])
 
             self.target_net.load_state_dict(target_params)
             ############################
@@ -329,7 +328,8 @@ def test_dqn(args, env, state_dim, n_action):
             if dqn.memory_counter >= dqn.memory_capacity:
                 #dqn.learn(target_update_method=args.target_update_method)
                 # for batch_size=10, do 6 updates/step so we see 60 samples per step
-
+                
+                # Part 3 (f) question (2)
                 if args.batch_size == 10:
                     for i in range(6):
                         dqn.learn(target_update_method=args.target_update_method)
