@@ -16,9 +16,17 @@ class Net(nn.Module):
         # Define the network.
         # The network include one input layer, num_hidden hidden layers, and one output layer.
         # Only use nn.Linear to define the layers. No other layers(Flatten, BatchNorm, etc.) are needed.
+        
+        # Input layer
+        self.input_layer = nn.Linear(state_dim, hidden_dim)
 
+        # Hidden layers
+        self.hidden_layers = nn.ModuleList([
+            nn.Linear(hidden_dim, hidden_dim) for _ in range(num_hidden)
+        ])
 
-
+        # Output layer
+        self.output_layer = nn.Linear(hidden_dim, n_action)
         ############################
 
 
@@ -30,9 +38,12 @@ class Net(nn.Module):
         # The forward pass includes the input layer, hidden layers, and output layer.
         # Between each layer, you need to apply the activation function using F.relu(x)
         # You do not need to add activation function after the output layer.
+        x = nn.functional.relu(self.input_layer(x))
+        
+        for layer in self.hidden_layers:
+            x = nn.functional.relu(layer(x))
 
-
-
+        action_value = self.output_layer(x)  # Final output layer with no activation
         ############################
         return action_value
 
@@ -60,7 +71,15 @@ class DQN(object):
         # Optimizer: use Adam, set the learning rate as lr
         # Define loss function as MSELoss
 
+        # Define the q network and target network. Move the net to the device.
+        self.q_net = Net(num_hidden, hidden_dim, state_dim, n_action).to(self.device)
+        self.target_net = Net(num_hidden, hidden_dim, state_dim, n_action).to(self.device)
+        
+        # Optimizer: use Adam, set the learning rate as lr
+        self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=lr)
 
+        # Define loss function as MSELoss
+        self.loss_func = nn.MSELoss()
 
         ############################
 
@@ -84,9 +103,10 @@ class DQN(object):
             # First using the eval_net to get the action values
             # Then, using the max() method to get the action with the highest Q value
             # To take the action, you need to move the action value back to the cpu using .cpu()
-
-
-
+            
+            # Use the Q network to compute Q-values and choose the max
+            action_values = self.q_net(x)
+            action = torch.max(action_values, dim=1)[1].cpu().item()
             ############################
 
         return action
@@ -107,7 +127,9 @@ class DQN(object):
         # If the memory is full, you need to replace the oldest transition with the new transition in the memory.
         # The code of transition replacing has been completed in the following 2 lines. You only need
         # to write one line to calculate the index of the oldest transition using the memory_counter and memory_capacity
-
+        
+        # Calculate the index in ring buffer
+        index = self.memory_counter % self.memory_capacity
 
         ############################
         transition = [s, a, r, s_]
@@ -121,7 +143,9 @@ class DQN(object):
             # Your Code #
             # update the target network by copying the parameters from the eval network every target_replace_iter steps
 
-
+            # Update the target network every target_replace_iter steps
+            if self.learn_step_counter % self.target_replace_iter == 0:
+                self.target_net.load_state_dict(self.q_net.state_dict())
             ############################
             # you can comment the following line if you do not want to print the update information
             print('hard update')
@@ -135,6 +159,15 @@ class DQN(object):
             # The parameters of the network are stored in a dictionary. So you need to update the parameters for each key in the dictionary
             # You also need to use the load_state_dict() method to load the parameters to the target network
 
+            # Soft update: target = target * (1 - tau) + q_net * tau
+            q_params = self.q_net.state_dict()
+            target_params = self.target_net.state_dict()
+
+            for key in q_params:
+                target_params[key] = (1 - self.soft_update_tau) * target_params[key] + \
+                                    self.soft_update_tau * q_params[key]
+
+            self.target_net.load_state_dict(target_params)
 
 
             ############################
@@ -175,8 +208,17 @@ class DQN(object):
         # line 3: calculate the target values using and save them in q_target
         #         you can use the max(1)[0] to calculate the maximum value in each row in q_next
         #         you may need to use the .view() method to adjust the dimension of the tensor
+        
+        # Q-learning core steps
 
+        # Line 1: Q(s, a) using gather to select Q-values of taken actions
+        q_eval = self.q_net(b_s).gather(1, b_a)
 
+        # Line 2: Q(s', a') using target network, no gradient tracking
+        q_next = self.target_net(b_s_).detach()
+
+        # Line 3: target = reward + gamma * max(Q(s', a'))
+        q_target = b_r + self.gamma * q_next.max(1)[0].view(self.batch_size, 1)
 
         ############################
 
@@ -187,6 +229,9 @@ class DQN(object):
         # Your Code #
         # 3 lines: clear the gradient using zero_grad(), backpropagation, and update the weights
 
+        self.optimizer.zero_grad()  # clear gradients
+        loss.backward()             # compute gradients
+        self.optimizer.step()       # update weights
 
         ############################
 
@@ -208,7 +253,20 @@ def ratio_reward(next_state, env):
     # r2 is the ratio that the agent is close to the radian threshold (get with env.theta_threshold_radians)
     # A general form of r1 and r2 is (threshold - abs(value)) / threshold.
 
+    # Get thresholds
+    x_threshold = env.x_threshold
+    theta_threshold = env.theta_threshold_radians
 
+    # Extract state values
+    position = next_state[0]
+    angle = next_state[2]
+
+    # Compute shaped rewards as ratios
+    r1 = (x_threshold - abs(position)) / x_threshold
+    r2 = (theta_threshold - abs(angle)) / theta_threshold
+
+    # return the sum of r1 and r2
+    return r1 + r2
 
     ############################
 
@@ -260,7 +318,7 @@ def test_dqn(args, env, state_dim, n_action):
             #     # Not used if the extreme reward is not mentioned in the instruction.
             #     save_reward = extreme_reward(done, reward)
             else:
-                raise ValueError('unknow reward method')
+                raise ValueError('unknown reward method')
 
             dqn.store_transition(state, action, save_reward, next_state)  # store transition
 
@@ -273,6 +331,8 @@ def test_dqn(args, env, state_dim, n_action):
             # In the question about the batch size, you need to think about when changing batch size from 60 to 10, how
             # many times of learning can make the performance comparison fair.
 
+            if dqn.memory_counter >= dqn.memory_capacity:
+                dqn.learn(target_update_method=args.target_update_method)
 
             ############################
 
