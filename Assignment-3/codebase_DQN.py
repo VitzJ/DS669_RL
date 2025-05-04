@@ -17,16 +17,11 @@ class Net(nn.Module):
         # The network include one input layer, num_hidden hidden layers, and one output layer.
         # Only use nn.Linear to define the layers. No other layers(Flatten, BatchNorm, etc.) are needed.
         
-        # Input layer
-        self.input_layer = nn.Linear(state_dim, hidden_dim)
+        self.input_layer = nn.Linear(state_dim, hidden_dim) # input layer
 
-        # Hidden layers
-        self.hidden_layers = nn.ModuleList([
-            nn.Linear(hidden_dim, hidden_dim) for _ in range(num_hidden)
-        ])
+        self.hidden_layers = nn.ModuleList([nn.Linear(hidden_dim, hidden_dim) for _ in range(num_hidden)]) # hidden layers
 
-        # Output layer
-        self.output_layer = nn.Linear(hidden_dim, n_action)
+        self.output_layer = nn.Linear(hidden_dim, n_action) # output layer
         ############################
 
 
@@ -38,12 +33,13 @@ class Net(nn.Module):
         # The forward pass includes the input layer, hidden layers, and output layer.
         # Between each layer, you need to apply the activation function using F.relu(x)
         # You do not need to add activation function after the output layer.
-        x = nn.functional.relu(self.input_layer(x))
-        
-        for layer in self.hidden_layers:
-            x = nn.functional.relu(layer(x))
 
-        action_value = self.output_layer(x)  # Final output layer with no activation
+        x = nn.functional.relu(self.input_layer(x)) # input Layer + Activation Function
+        
+        for layer in self.hidden_layers: # for each input layer
+            x = nn.functional.relu(layer(x)) # apply the activation function
+
+        action_value = self.output_layer(x)  # final output layer with no activation
         ############################
         return action_value
 
@@ -71,9 +67,9 @@ class DQN(object):
         # Optimizer: use Adam, set the learning rate as lr
         # Define loss function as MSELoss
 
-        # Define the q network and target network. Move the net to the device.
-        self.q_net = Net(num_hidden, hidden_dim, state_dim, n_action).to(self.device)
-        self.target_net = Net(num_hidden, hidden_dim, state_dim, n_action).to(self.device)
+        # Define the q network and target network. 
+        self.q_net = Net(num_hidden, hidden_dim, state_dim, n_action).to(self.device) # Move the net to the device.
+        self.target_net = Net(num_hidden, hidden_dim, state_dim, n_action).to(self.device) # Move the net to the device.
         
         # Optimizer: use Adam, set the learning rate as lr
         self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=lr)
@@ -105,8 +101,8 @@ class DQN(object):
             # To take the action, you need to move the action value back to the cpu using .cpu()
             
             # Use the Q network to compute Q-values and choose the max
-            action_values = self.q_net(x)
-            action = torch.max(action_values, dim=1)[1].cpu().item()
+            action_values = self.q_net(x) # get action values
+            action = torch.max(action_values, dim=1)[1].cpu().item() # choose max
             ############################
 
         return action
@@ -128,8 +124,8 @@ class DQN(object):
         # The code of transition replacing has been completed in the following 2 lines. You only need
         # to write one line to calculate the index of the oldest transition using the memory_counter and memory_capacity
         
-        # Calculate the index in ring buffer
-        index = self.memory_counter % self.memory_capacity
+        # Calculate the index in ring buffer, wrap around when full
+        index = self.memory_counter % self.memory_capacity # ring‐buffer index
 
         ############################
         transition = [s, a, r, s_]
@@ -160,13 +156,14 @@ class DQN(object):
             # You also need to use the load_state_dict() method to load the parameters to the target network
 
             # Soft update: target = target * (1 - tau) + q_net * tau
-            q_params = self.q_net.state_dict()
-            target_params = self.target_net.state_dict()
+            q_params = self.q_net.state_dict() # get current parameters of q_net
+            target_params = self.target_net.state_dict() # get current parameters of target_net
 
-            for key in q_params:
+            for key in q_params: # for each parameter, apply the soft update function
+                # Combine target network's current q-values with evaluation network q-values
                 target_params[key] = ((1 - self.soft_update_tau) * target_params[key]) + (self.soft_update_tau * q_params[key])
 
-            self.target_net.load_state_dict(target_params)
+            self.target_net.load_state_dict(target_params) # apply the changes
             ############################
             # you can comment the following line if you do not want to print the update information
             #print('soft update')
@@ -224,9 +221,11 @@ class DQN(object):
         # Your Code #
         # 3 lines: clear the gradient using zero_grad(), backpropagation, and update the weights
 
-        self.optimizer.zero_grad()  # clear gradients
-        loss.backward()             # compute gradients
-        self.optimizer.step()       # update weights
+        self.optimizer.zero_grad() # clear gradients
+        
+        loss.backward() # compute gradients
+        
+        self.optimizer.step() # update weights
 
         ############################
 
@@ -257,8 +256,8 @@ def ratio_reward(next_state, env):
     angle = next_state[2] # angle dim in state vector
 
     # Compute shaped rewards as ratios
-    r1 = (x_threshold - abs(position)) / x_threshold
-    r2 = (theta_threshold - abs(angle)) / theta_threshold
+    r1 = (x_threshold - abs(position)) / x_threshold # position component
+    r2 = (theta_threshold - abs(angle)) / theta_threshold # angle component
 
     ############################
 
@@ -323,17 +322,18 @@ def test_dqn(args, env, state_dim, n_action):
             # In the question about the batch size, you need to think about when changing batch size from 60 to 10, how
             # many times of learning can make the performance comparison fair.
 
+            # If we run out of memory capacity, as in the buffer fills up, start learning
             if dqn.memory_counter >= dqn.memory_capacity:
                 #dqn.learn(target_update_method=args.target_update_method)
                 # for batch_size=10, do 6 updates/step so we see 60 samples per step
                 
                 # Part 3 (f) question (2)
-                if args.batch_size == 10 and args.reward_method == 'ratio':
+                if args.batch_size == 10 and args.reward_method == 'ratio': # ensures that cases where batch size = 10 processes as if its 60 samples
                     for j in range(6):
                         # if j == 0:
                         #     print('Batch size correction repeat factor activated.')
                         dqn.learn(target_update_method=args.target_update_method)
-                else:
+                else: # if the batch size is not 10 and reward_method != 'ratio', continue as normal
                     dqn.learn(target_update_method=args.target_update_method)
 
             ############################

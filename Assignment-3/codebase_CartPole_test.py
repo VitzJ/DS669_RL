@@ -27,7 +27,8 @@ def test_each_action(env):
         # Your Code #
         # Call the step function to test each action #
         # save the next state, reward, done, truncated and print
-        next_state, reward, done, truncated, _ = env.step(action)
+
+        next_state, reward, done, truncated, _ = env.step(action) # standard output format for .step
 
         #############################
         print(f'state:{state}, action:{action}, reward:{reward}, done:{done}, truncated:{truncated}, '
@@ -62,7 +63,7 @@ def test_moves(env, policy='random'):
             # Please read the gym documentation to find the representation each action
             # Take the action and save the next state, reward, done, truncated
             # Select an action based on the policy
-            import random
+            import random # I added this here because there is no import statement for random at the top, but the question asks for randomness
 
             if policy == 'random':
                 action = random.choice(candidate_actions)
@@ -75,7 +76,6 @@ def test_moves(env, policy='random'):
 
             # Step the environment
             next_state, reward, done, truncated, _ = env.step(action)
-
 
             #############################
             total_reward += reward
