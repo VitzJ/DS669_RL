@@ -148,7 +148,7 @@ class DQN(object):
                 self.target_net.load_state_dict(self.q_net.state_dict())
             ############################
             # you can comment the following line if you do not want to print the update information
-            print('hard update')
+            #print('hard update')
         elif target_update_method == 'soft':
             ############################
             # Your Code #
@@ -169,7 +169,7 @@ class DQN(object):
             self.target_net.load_state_dict(target_params)
             ############################
             # you can comment the following line if you do not want to print the update information
-            print('soft update')
+            #print('soft update')
         else:
             raise ValueError('unknow target update method')
 
@@ -186,8 +186,6 @@ class DQN(object):
         # sample batch size memory from the memory. We use np.random.choice to get a list of sampling indexes.
         sample_idx = np.random.choice(self.memory_capacity, self.batch_size)
 
-        # We use these indexes to get the list of state, action, reward, next state and save them separately
-        # into 4 variables: b_s, b_a, b_r, b_s_
         b_s = torch.FloatTensor([self.memory[idx][0] for idx in sample_idx]).to(self.device)
         b_a = torch.LongTensor([[self.memory[idx][1]] for idx in sample_idx]).to(self.device)
         b_r = torch.FloatTensor([[self.memory[idx][2]] for idx in sample_idx]).to(self.device)
@@ -291,7 +289,7 @@ def test_dqn(args, env, state_dim, n_action):
 
     for i in range(400):  # 400 episodes
 
-        # print(f"i th episode:{i}")
+        #print(f"i th episode:{i}")
         state, _ = env.reset()
         # the sum of the rewards of each episode
         total_reward = 0
@@ -330,10 +328,13 @@ def test_dqn(args, env, state_dim, n_action):
                 # for batch_size=10, do 6 updates/step so we see 60 samples per step
                 
                 # Part 3 (f) question (2)
-                if args.batch_size == 10:
-                    for i in range(6):
+                if args.batch_size == 10 and args.reward_method == 'ratio':
+                    for j in range(6):
+                        # if j == 0:
+                        #     print('Batch size correction repeat factor activated.')
                         dqn.learn(target_update_method=args.target_update_method)
-
+                else:
+                    dqn.learn(target_update_method=args.target_update_method)
 
             ############################
 

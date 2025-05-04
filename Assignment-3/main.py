@@ -45,11 +45,11 @@ def main(args):
 
             # print the initial states
             # comment other 2 parts if you only want to run one of the following part
-            #init_states(env)
+            init_states(env)
 
             # test the environment with each action
             # comment other 2 parts if you only want to run one of the following part
-            #test_each_action(env)
+            test_each_action(env)
 
             # test the environment with different policies.
             # comment other 2 parts if you only want to run one of the following part
